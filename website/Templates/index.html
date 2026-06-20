@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laptop Price Prediction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-1: #4338ca;
+        --bg-2: #7c3aed;
+        --bg-3: #2563eb;
+        --accent: #6366f1;
+        --accent-2: #8b5cf6;
+        --accent-glow: rgba(99, 102, 241, 0.45);
+        --ink: #1c1b2e;
+        --muted: #6b7280;
+        --line: rgba(28, 27, 46, 0.1);
+        --field: #f6f6fb;
+        --field-focus: #ffffff;
+        --card: rgba(255, 255, 255, 0.92);
+        --radius: 16px;
+        --display: "Space Grotesk", system-ui, sans-serif;
+        --body: "Inter", system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--body);
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 18px;
+        background: linear-gradient(
+          135deg,
+          var(--bg-1) 0%,
+          var(--bg-2) 52%,
+          var(--bg-3) 100%
+        );
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* soft ambient glass blobs */
+      .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.55;
+        z-index: 0;
+        pointer-events: none;
+      }
+      .blob.one {
+        width: 420px;
+        height: 420px;
+        background: #a78bfa;
+        top: -140px;
+        left: -100px;
+      }
+      .blob.two {
+        width: 360px;
+        height: 360px;
+        background: #60a5fa;
+        bottom: -120px;
+        right: -90px;
+      }
+      .blob.three {
+        width: 280px;
+        height: 280px;
+        background: #f0abfc;
+        bottom: 40%;
+        left: 55%;
+        opacity: 0.3;
+      }
+
+      .wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 560px;
+        background: var(--card);
+        backdrop-filter: blur(22px) saturate(150%);
+        -webkit-backdrop-filter: blur(22px) saturate(150%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 26px;
+        box-shadow:
+          0 30px 60px -20px rgba(30, 20, 80, 0.45),
+          0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+        padding: 40px 40px 36px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: rgba(99, 102, 241, 0.1);
+        padding: 6px 12px;
+        border-radius: 100px;
+        margin-bottom: 16px;
+      }
+      .eyebrow .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+      }
+
+      .title {
+        font-family: var(--display);
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        font-size: 14.5px;
+        color: var(--muted);
+        margin-bottom: 28px;
+        line-height: 1.5;
+      }
+
+      form {
+        display: grid;
+        gap: 18px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .inputfield {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      input[type="text"],
+      select {
+        width: 100%;
+        font-family: var(--body);
+        font-size: 14.5px;
+        color: var(--ink);
+        background: var(--field);
+        border: 1.5px solid transparent;
+        border-radius: var(--radius);
+        padding: 13px 14px;
+        transition:
+          border-color 0.18s ease,
+          background 0.18s ease,
+          box-shadow 0.18s ease;
+        outline: none;
+        appearance: none;
+      }
+      input[type="text"]::placeholder {
+        color: #aab;
+      }
+      input[type="text"]:hover,
+      select:hover {
+        background: #eeeef7;
+      }
+      input[type="text"]:focus,
+      select:focus {
+        background: var(--field-focus);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px var(--accent-glow);
+      }
+
+      /* custom select arrow */
+      .custom_select {
+        position: relative;
+      }
+      .custom_select::after {
+        content: "";
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 9px;
+        height: 9px;
+        border-right: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        transform: translateY(-65%) rotate(45deg);
+        pointer-events: none;
+      }
+      select {
+        cursor: pointer;
+        padding-right: 38px;
+      }
+
+      /* toggle-style checkboxes */
+      .check {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: var(--field);
+        border: 1.5px solid transparent;
+        border-radius: var(--radius);
+        padding: 12px 14px;
+        cursor: pointer;
+        transition:
+          background 0.18s ease,
+          border-color 0.18s ease;
+        user-select: none;
+      }
+      .toggle:hover {
+        background: #eeeef7;
+      }
+      .toggle span {
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .toggle input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .switch {
+        position: relative;
+        width: 42px;
+        height: 24px;
+        border-radius: 100px;
+        background: #d3d3e0;
+        flex: 0 0 auto;
+        transition: background 0.2s ease;
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        transition: transform 0.2s ease;
+      }
+      .toggle input:checked + .switch {
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      }
+      .toggle input:checked + .switch::after {
+        transform: translateX(18px);
+      }
+      .toggle input:focus-visible + .switch {
+        box-shadow: 0 0 0 4px var(--accent-glow);
+      }
+
+      /* submit button */
+      .btn {
+        width: 100%;
+        font-family: var(--display);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: #fff;
+        cursor: pointer;
+        border: none;
+        border-radius: var(--radius);
+        padding: 16px;
+        margin-top: 6px;
+        background: linear-gradient(
+          120deg,
+          var(--accent) 0%,
+          var(--accent-2) 100%
+        );
+        box-shadow: 0 12px 24px -8px var(--accent-glow);
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          filter 0.15s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 32px -10px var(--accent-glow);
+        filter: brightness(1.05);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+      .btn:focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 4px #fff,
+          0 0 0 7px var(--accent);
+      }
+
+      /* result panel */
+      .result {
+        margin-top: 22px;
+        border-radius: 18px;
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.08),
+          rgba(139, 92, 246, 0.08)
+        );
+        border: 1px solid rgba(99, 102, 241, 0.18);
+        padding: 22px 24px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(10px);
+        max-height: 0;
+        overflow: hidden;
+        transition:
+          opacity 0.4s ease,
+          transform 0.4s ease,
+          max-height 0.4s ease,
+          padding 0.4s ease;
+      }
+      .result.show {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 220px;
+      }
+      .result .rlabel {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+      }
+      .result .price {
+        font-family: var(--display);
+        font-size: 38px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 6px 0 4px;
+      }
+      .result .range {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .result .note {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 10px;
+        opacity: 0.85;
+      }
+
+      @media (max-width: 520px) {
+        .wrapper {
+          padding: 30px 22px 28px;
+        }
+        .title {
+          font-size: 25px;
+        }
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+    <div class="blob three"></div>
+
+    <div class="wrapper">
+      <span class="eyebrow"><span class="dot"></span>ML Estimator</span>
+      <h1 class="title">Laptop Price Prediction</h1>
+      <p class="subtitle">
+        Enter the specs below and get an instant estimated market price powered
+        by the model.
+      </p>
+
+      <form id="predictForm" action="/" method="POST">
+        <div class="row">
+          <div class="inputfield">
+            <label for="ram">RAM (GB)</label>
+            <input
+              type="text"
+              id="ram"
+              name="ram"
+              inputmode="numeric"
+              placeholder="e.g. 16"
+            />
+          </div>
+          <div class="inputfield">
+            <label for="weight">Weight (kg)</label>
+            <input
+              type="text"
+              id="weight"
+              name="weight"
+              inputmode="decimal"
+              placeholder="e.g. 1.6"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="check">
+          <label class="toggle" for="touchscreen">
+            <span>Touchscreen</span>
+            <input type="checkbox" id="touchscreen" name="touchscreen" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+          <label class="toggle" for="ips">
+            <span>IPS Display</span>
+            <input type="checkbox" id="ips" name="ips" />
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="inputfield">
+            <label for="company">Company</label>
+            <div class="custom_select">
+              <select name="company" id="company">
+                <option value="" selected hidden>Select</option>
+                <option value="acer">Acer</option>
+                <option value="apple">Apple</option>
+                <option value="asus">Asus</option>
+                <option value="dell">Dell</option>
+                <option value="hp">HP</option>
+                <option value="lenovo">Lenovo</option>
+                <option value="msi">MSI</option>
+                <option value="toshiba">Toshiba</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="inputfield">
+            <label for="typename">Type Name</label>
+            <div class="custom_select">
+              <select name="typename" id="typename">
+                <option value="" selected hidden>Select</option>
+                <option value="2in1convertible">2 in 1 Convertible</option>
+                <option value="gaming">Gaming</option>
+                <option value="netbook">Net Book</option>
+                <option value="notebook">Note Book</option>
+                <option value="ultrabook">Ultra Book</option>
+                <option value="workstation">Workstation</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="inputfield">
+          <label for="opsys">Operating System</label>
+          <div class="custom_select">
+            <select name="opsys" id="opsys">
+              <option value="" selected hidden>Select</option>
+              <option value="windows">Windows</option>
+              <option value="mac">Mac</option>
+              <option value="linux">Linux</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="inputfield">
+            <label for="cpuname">CPU</label>
+            <div class="custom_select">
+              <select name="cpuname" id="cpuname">
+                <option value="" selected hidden>Select</option>
+                <option value="intelcorei3">Intel Core i3</option>
+                <option value="intelcorei5">Intel Core i5</option>
+                <option value="intelcorei7">Intel Core i7</option>
+                <option value="amd">AMD</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="inputfield">
+            <label for="gpuname">GPU</label>
+            <div class="custom_select">
+              <select name="gpuname" id="gpuname">
+                <option value="" selected hidden>Select</option>
+                <option value="intel">Intel</option>
+                <option value="amd">AMD</option>
+                <option value="nvidia">Nvidia</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn">Predict Price</button>
+      </form>
+
+      <p>{{ pred }}</p>
+    </div>
+  </body>
+</html>
